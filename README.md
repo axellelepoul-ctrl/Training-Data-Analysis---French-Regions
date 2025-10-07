@@ -1,4 +1,4 @@
-# Training-Data-Analysis---French-Regions
+# TrainingDataAnalysis-FrenchRegions
 
 This project is an R Notebook that analyzes professional training data from the Mon Compte Formation platform. The goal is to clean, transform, and visualize the data to answer several analytical questions.
 
