@@ -1,0 +1,137 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+
+df = read.csv("moncompteformation_formations_engagees.csv", sep=";")
+head(df)
+```
+
+
+
+
+```{r}
+plot(cars)
+
+#Question 1
+
+duplicated_rows <- duplicated(df)
+df[duplicated_rows, ]
+```
+
+
+```{r}
+
+#Question 2
+
+library(dplyr)
+
+df1 <- df #on attribut df à df1 pour ne pas altérer la base de données d'origine
+
+df1 <- df1 %>%
+  mutate(
+    prix_total = nb_dossiers * prix_moyen #on rajoute une colonne prix_total qui correspond au prix moyen multiplié par le nombre de dossiers
+    
+  )
+
+head(df1)
+
+col_equal <- df$prix_total == df$montant_engage #compare prix total et montant engagé, col_equal donne les différences si il y en a
+
+print(col_equal)
+```
+
+
+```{r}
+
+#Question 3
+
+df1 <- df1 %>%
+  mutate(libelle_formacode_principal = ifelse(libelle_formacode_principal == "Yoga", "Cours de yoga", libelle_formacode_principal))
+
+head(df1)
+```
+
+
+```{r}
+#Question 4
+
+dep_money <- df1 %>%
+  group_by(departement_lieu_formation) %>%
+  summarise(total_montant_engage = sum(montant_engage, na.rm = TRUE))
+
+head(dep_money)
+
+tab3 <- dep_money %>%
+  filter(departement_lieu_formation == "Paris")
+
+head(tab3)
+```
+
+
+
+```{r}
+
+#Question 5
+
+library(dplyr)
+
+resultat <- df1 %>%
+  filter(grepl("^2022", date.validation)) %>%
+  count(region_lieu_formation)
+
+dep_money2 <- df1 %>%
+  group_by(region_lieu_formation) %>%
+  summarise(total_montant_engage = sum(montant_engage, na.rm = TRUE))
+
+head(dep_money2)
+
+train_reg <- data.frame(
+  Region = resultat$region_lieu_formation,
+  Formés = resultat$n,
+  Depenses = dep_money2$total_montant_engage
+)
+```
+
+
+
+```{r}
+#Question 6
+df78 = read.csv("fr_population.region.departement.csv", sep=";")
+head(df78)
+
+df7 <- df78[1:13, c(1, 5)]
+region <- merge(train_reg, df7, by.x = "Region", by.y = "Evolution.de.la.population.par.région")
+
+names(region)[4]="Habitants"
+char <- substr(region$Habitants[1],2,2)
+region$Habitants <- gsub(char, "",region$Habitants) #on supp le caract qui nous pose pb 
+region$Habitants <- as.numeric(region$Habitants)
+
+region <- region %>%
+  mutate(Cout = ( Depenses / Habitants / 3.373))
+head(region)
+```
+
+
+```{r}
+#Question 7
+library(stringr)
+
+df3 <- df1 %>%
+  filter(str_detect(statut_dossier, "Clos"))
+
+head(df3)
+```
+
+
+```{r}
+
+#Question 8
+Closs <- sum(grepl("Clos - Réalisation Totale", df3$statut_dossier))
+reussite <- round((Closs/nrow(df3)) *100, 1)
+head(reussite)
+
+```
+
